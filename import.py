@@ -1,5 +1,10 @@
+import datetime
+import re
+import sys
 from html.parser import HTMLParser
 from urllib.request import urlopen
+
+from pymongo import MongoClient
 
 
 class MyHTMLParser(HTMLParser):
@@ -26,18 +31,15 @@ class MyHTMLParser(HTMLParser):
             # print('==> Start reading table #', self.tableCounter)
         if tag == 'tr':
             self.readingTr = True
-            # self.currentObject = {}
-            # print('start TR')
         if tag == 'td':
             self.readingTd = True
-            # print('start TD')
 
     def handle_endtag(self, tag):
         if tag == 'table':
             self.readingTable = False
             self.sheets.append(self.sheet)
             self.sheet = []
-            print(self.headers)
+            # print(self.headers)
             # print('===> Stop reading table #', self.tableCounter)
         if tag == 'tr':
             self.readingTr = False
@@ -63,16 +65,16 @@ class MyHTMLParser(HTMLParser):
                 pass
             else:
                 self.headers.append(str.lower(data))
-        # print('counterTdReading', self.counterTdReading)
-        # print('len(self.headers)', len(self.headers))
         if self.readingTd and not self.readingHeaders and not is_note and self.counterTdReading < len(self.headers):
             current_header = self.headers[self.counterTdReading]
 
             if current_header == 'state' and data == '0':
                 pass
             elif current_header == 'date':
-                data = data  # todo ISODATE
-                self.currentObject[current_header] = data
+                # to iso date
+                date = self.clean_date(data)
+                # print(date)
+                self.currentObject[current_header] = datetime.datetime.strptime(date, "%m/%d/%Y %H:%M")
             elif data.isdigit():
                 data = int(data)
                 self.currentObject[current_header] = data
@@ -80,21 +82,59 @@ class MyHTMLParser(HTMLParser):
                 self.currentObject[current_header] = data
             self.counterTdReading += 1
 
+    def clean_date(self, data):
+        date_tab = data.split()
+        date = date_tab[0].split('/')
+        if date[2] == '20':
+            date[2] = '2020'
+        date = '/'.join(date)
+        hour = '12:00'
+        if len(date_tab) == 2:
+            hour = ':'.join(date_tab[1].split(':')[0:2])
+        if len(date_tab) == 3:
+            if date_tab[2] == 'PM':
+                hour_tab = date_tab[1].split(':')
+                h = (int(hour_tab[0]) + 12) % 12
+                m = hour_tab[1]
+            else:
+                hour_tab = date_tab[1].split(':')
+                h = int(hour_tab[0]) % 12
+                m = hour_tab[1]
+            hour = str(h) + ':' + str(m)
+        return date + ' ' + hour
+
 
 class ImportMongoDB:
     def __init__(self):
         self.true = "https://docs.google.com/spreadsheets/d/1wQVypefm946ch4XDp37uZ-wartW4V7ILdg-qYiDXUHM/htmlview?sle=true"
         self.filename = "index.html"
 
-    def main(self):
+    def main(self, argv):
         html = self.read_from_url()
-        self.write_to_file(html)
+        # self.write_to_file(html)
         # html = self.read_from_file()
 
-        parser = MyHTMLParser()
-        parser.feed(html.replace('<td></td>', '<td>0</td>'))
+        clean_html = self.html_cleaning(html)
 
-        for sheet in parser.sheets:
+        parser = MyHTMLParser()
+        parser.feed(clean_html)
+
+        # self.print_debug(parser.sheets)
+        self.write_to_mongodb(argv, parser.sheets)
+
+    def write_to_mongodb(self, argv, sheets):
+        client = MongoClient(argv[1])
+        stats = client.coronavirus_maxime.statistics
+        stats.delete_many({})
+        for sheet in sheets:
+            stats.insert_many(sheet)
+        client.close()
+
+    def html_cleaning(self, html):
+        return re.sub(r'<td( class="s.")?></td>', '<td>0</td>', html)
+
+    def print_debug(self, sheets):
+        for sheet in sheets:
             print(sheet[0])
             print(sheet[len(sheet) - 1])
             print()
@@ -115,5 +155,4 @@ class ImportMongoDB:
         return html
 
 
-test = ImportMongoDB()
-test.main()
+ImportMongoDB().main(sys.argv)
