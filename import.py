@@ -42,7 +42,7 @@ class MyHTMLParser(HTMLParser):
             self.readingTable = False
             self.sheets.append(self.sheet)
             self.sheet = []
-            # print(self.headers)
+            print(self.headers)
             # print('===> Stop reading table #', self.tableCounter)
         if tag == 'tr':
             self.readingTr = False
@@ -64,7 +64,9 @@ class MyHTMLParser(HTMLParser):
                 self.headers.append('country')
             elif 'Date' in data or 'Update' in data:
                 self.headers.append('date')
-            elif '0' in data:
+            elif data == 'First confirmed date in country (Est.)':
+                self.headers.append('First confirmed date in country')
+            elif '0' == data:
                 pass
             else:
                 self.headers.append(str.lower(data))
@@ -141,11 +143,12 @@ class ImportMongoDB:
 
         self.add_geo_loc(parser1.sheets, parser2.sheets[0])
 
-        self.write_to_mongodb(argv, parser1.sheets)
+        self.write_to_mongodb(argv, parser1.sheets, 'coronavirus_maxime', 'statistics')
+        self.write_to_mongodb(argv, parser2.sheets, 'coronavirus_maxime', 'time_series')
 
-    def write_to_mongodb(self, argv, sheets):
+    def write_to_mongodb(self, argv, sheets, db, coll):
         client = MongoClient(argv[1])
-        stats = client.coronavirus_maxime.statistics
+        stats = client.get_database(db).get_collection(coll)
         stats.delete_many({})
         for sheet in sheets:
             stats.insert_many(sheet)
