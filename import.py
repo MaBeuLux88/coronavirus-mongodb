@@ -8,16 +8,19 @@ from pymongo import MongoClient
 
 
 class MyHTMLParser(HTMLParser):
-    tableCounter = 0
-    readingTable = False
-    readingTr = False
-    readingTd = False
-    readingHeaders = False
-    headers = []
-    sheets = []
-    sheet = []
-    currentObject = {}
-    counterTdReading = 0
+
+    def __init__(self):
+        super().__init__()
+        self.tableCounter = 0
+        self.readingTable = False
+        self.readingTr = False
+        self.readingTd = False
+        self.readingHeaders = False
+        self.headers = []
+        self.sheets = []
+        self.sheet = []
+        self.currentObject = {}
+        self.counterTdReading = 0
 
     def error(self, message):
         print('Ooh Ooooh...')
@@ -70,6 +73,14 @@ class MyHTMLParser(HTMLParser):
 
             if current_header == 'state' and data == '0':
                 pass
+            elif current_header == 'country':
+                if data == 'China':
+                    data = 'Mainland China'
+                elif data == 'United States':
+                    data = 'US'
+                self.currentObject[current_header] = data
+                if data == 'Germany':
+                    self.currentObject['state'] = 'Bavaria'
             elif current_header == 'date':
                 # to iso date
                 date = self.clean_date(data)
@@ -106,21 +117,31 @@ class MyHTMLParser(HTMLParser):
 
 class ImportMongoDB:
     def __init__(self):
-        self.true = "https://docs.google.com/spreadsheets/d/1wQVypefm946ch4XDp37uZ-wartW4V7ILdg-qYiDXUHM/htmlview?sle=true"
+        self.url1 = "https://docs.google.com/spreadsheets/d/1wQVypefm946ch4XDp37uZ-wartW4V7ILdg-qYiDXUHM/htmlview?sle=true"
+        self.url2 = "https://docs.google.com/spreadsheets/d/1UF2pSkFTURko2OvfHWWlFpDFAr1UxCBA4JLwlSP6KFo/htmlview?usp=sharing&sle=true#"
         self.filename = "index.html"
 
     def main(self, argv):
-        html = self.read_from_url()
+        html1 = self.read_from_url(self.url1)
+        html2 = self.read_from_url(self.url2)
+
         # self.write_to_file(html)
         # html = self.read_from_file()
 
-        clean_html = self.html_cleaning(html)
+        clean_html1 = self.html_cleaning(html1)
+        clean_html2 = self.html_cleaning(html2)
 
-        parser = MyHTMLParser()
-        parser.feed(clean_html)
+        parser1 = MyHTMLParser()
+        parser1.feed(clean_html1)
 
-        # self.print_debug(parser.sheets)
-        self.write_to_mongodb(argv, parser.sheets)
+        parser2 = MyHTMLParser()
+        parser2.feed(clean_html2)
+
+        self.print_debug(parser2.sheets)
+
+        self.add_geo_loc(parser1.sheets, parser2.sheets[0])
+
+        self.write_to_mongodb(argv, parser1.sheets)
 
     def write_to_mongodb(self, argv, sheets):
         client = MongoClient(argv[1])
@@ -144,8 +165,7 @@ class ImportMongoDB:
         file.write(html)
         file.close()
 
-    def read_from_url(self):
-        url = self.true
+    def read_from_url(self, url):
         return urlopen(url).read().decode('utf-8')
 
     def read_from_file(self):
@@ -153,6 +173,17 @@ class ImportMongoDB:
         html = file.read()
         file.close()
         return html
+
+    def add_geo_loc(self, sheets, docs_with_loc):
+        for docs in sheets:
+            for doc in docs:
+                state = doc.get('state')
+                country = doc['country']
+                for doc_with_loc in docs_with_loc:
+                    if doc_with_loc['country'] == country:
+                        if state is None or doc_with_loc['state'] == state:
+                            doc['loc'] = {'type': 'Point',
+                                          'coordinates': [float(doc_with_loc['long']), float(doc_with_loc['lat'])]}
 
 
 ImportMongoDB().main(sys.argv)
