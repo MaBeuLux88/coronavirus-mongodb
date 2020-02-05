@@ -76,8 +76,8 @@ class MyHTMLParser(HTMLParser):
             if current_header == 'state' and data == '0':
                 pass
             elif current_header == 'country':
-                if data == 'China':
-                    data = 'Mainland China'
+                if data == 'Mainland China':
+                    data = 'China'
                 elif data == 'United States':
                     data = 'US'
                 self.currentObject[current_header] = data
@@ -94,6 +94,7 @@ class MyHTMLParser(HTMLParser):
             else:
                 self.currentObject[current_header] = data
             self.counterTdReading += 1
+            self.currentObject['imported_from_tab'] = self.tableCounter
 
     def clean_date(self, data):
         date_tab = data.split()
