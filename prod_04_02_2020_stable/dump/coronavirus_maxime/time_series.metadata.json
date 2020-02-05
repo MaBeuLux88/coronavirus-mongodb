@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"coronavirus_maxime.time_series"}],"uuid":"3597ba534d754349893a2bc29e675c87"}
