@@ -1,7 +1,11 @@
-# Coronavirus MongoDB Database
+# Coronavirus MongoDB Data Import
 
-Import Coronavirus data into a MongoDB database from the Google Spreadsheet from Johns Hopkins University.
+This repository contains some scripts which help cleaning & importing the dataset from [Johns Hopkins University's Github repository](https://github.com/CSSEGISandData/2019-nCoV/) into a MongoDB database.
 
-## Usage
+This repository is currently a work in progress.
 
-`python3 import.py "mongodb+srv://LOGIN:PASSWORD@coronacluster-abcde.mongodb.net/test?retryWrites=true&w=majority"`
+## Author
+
+Maxime Beugnet <maxime@mongodb.com>
+- [Twitter](https://twitter.com/MBeugnet)
+- [LinkedIn](https://www.linkedin.com/in/maximebeugnet)
