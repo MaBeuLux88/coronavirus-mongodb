@@ -1,0 +1,16 @@
+{
+    "id": "5e3c958c5d0fa079cb6a9ece",
+    "database": "coronovirus",
+    "collection": "stage",
+    "roles": [
+        {
+            "name": "default",
+            "apply_when": {},
+            "write": true,
+            "insert": true,
+            "delete": true,
+            "additional_fields": {}
+        }
+    ],
+    "schema": {}
+}

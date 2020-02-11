@@ -1,0 +1,12 @@
+{
+    "id": "5e3c39781a56cee3e4d73077",
+    "name": "out",
+    "actions": [
+        "get",
+        "post",
+        "put",
+        "delete",
+        "patch",
+        "head"
+    ]
+}

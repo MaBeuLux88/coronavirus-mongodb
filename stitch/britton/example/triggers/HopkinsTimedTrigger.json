@@ -1,0 +1,10 @@
+{
+    "id": "5e3d048856c02ce44c0a181a",
+    "name": "HopkinsTimedTrigger",
+    "type": "SCHEDULED",
+    "config": {
+        "schedule": "*/5 * * * *"
+    },
+    "function_name": "getHopkinsData",
+    "disabled": false
+}

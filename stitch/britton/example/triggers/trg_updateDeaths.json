@@ -1,0 +1,18 @@
+{
+    "id": "5e42fdcc97b8a8aa0e8106f9",
+    "name": "trg_updateDeaths",
+    "type": "DATABASE",
+    "config": {
+        "operation_types": [
+            "INSERT"
+        ],
+        "database": "coronavirus",
+        "collection": "deaths",
+        "service_name": "mongodb-atlas",
+        "match": {},
+        "full_document": true,
+        "unordered": false
+    },
+    "function_name": "fnc_updateDeaths",
+    "disabled": false
+}

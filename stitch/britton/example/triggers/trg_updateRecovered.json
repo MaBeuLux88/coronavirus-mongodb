@@ -1,0 +1,18 @@
+{
+    "id": "5e4303b3105c17186dd54a5f",
+    "name": "trg_updateRecovered",
+    "type": "DATABASE",
+    "config": {
+        "operation_types": [
+            "INSERT"
+        ],
+        "database": "coronavirus",
+        "collection": "recovered",
+        "service_name": "mongodb-atlas",
+        "match": {},
+        "full_document": true,
+        "unordered": false
+    },
+    "function_name": "fnc_updateRecovered",
+    "disabled": false
+}

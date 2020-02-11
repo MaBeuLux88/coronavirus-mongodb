@@ -1,0 +1,16 @@
+{
+    "id": "5e3ce3e5340f9a5120d858d9",
+    "database": "coronovirus",
+    "collection": "current_count",
+    "roles": [
+        {
+            "name": "default",
+            "apply_when": {},
+            "write": true,
+            "insert": true,
+            "delete": true,
+            "additional_fields": {}
+        }
+    ],
+    "schema": {}
+}
