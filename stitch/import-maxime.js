@@ -3,23 +3,22 @@ exports = async function () {
     statistics.deleteMany({}).then(result => console.log(JSON.stringify(result)));
 
     const csv_confirmed = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Confirmed.csv"});
-    // const csv_deaths = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Deaths.csv"});
-    // const csv_recovered = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Recovered.csv"});
+    const csv_deaths = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Deaths.csv"});
+    const csv_recovered = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Recovered.csv"});
 
     import_csv(statistics, csv_confirmed.body.text(), "confirmed");
-    // import_csv(statistics, csv_deaths.body.text(), "deaths");
-    // import_csv(statistics, csv_recovered.body.text(), "recovered");
+    import_csv(statistics, csv_deaths.body.text(), "deaths");
+    import_csv(statistics, csv_recovered.body.text(), "recovered");
 
     return 0;
 };
 
-function import_csv(collection, csv, field) {
+async function import_csv(collection, csv, field) {
     csv = csv.replace(/Mainland /g, "");
 
     const lines = csv.split("\n");
     const headers = lines[0].split(",");
     const nb_entries = headers.length - 4;
-    
 
     for (let i = 1; i < lines.length; i++) {
         let current_line = lines[i];
@@ -41,7 +40,7 @@ function import_csv(collection, csv, field) {
             const value_obj = {};
             value_obj[field] = value;
 
-            collection.updateOne(
+            await collection.updateOne(
                 {_id: country + "," + state + "," + date},
                 {
                     $setOnInsert: {
@@ -54,8 +53,7 @@ function import_csv(collection, csv, field) {
                     $set: value_obj
                 },
                 {upsert: true}
-            ).then(() => {
-            }).catch(err => console.error(`Failed to add review: ${err}`));
+            );
         }
     }
 }
@@ -78,7 +76,7 @@ function shift_line(line) {
     } else {
         line = line.split(",").slice(1).join(",");
     }
-    return line
+    return line;
 }
 
 function extract_next(line) {
