@@ -83,7 +83,7 @@ If you named your cluster "Cluster0" for example you would change the __"cluster
     "name": "mongodb-atlas",
     "type": "mongodb-atlas",
     "config": {
-        "clusterName": "DevCluster",
+        "clusterName": "Cluster0",
         "readPreference": "primary",
         "wireProtocolEnabled": false
     },
