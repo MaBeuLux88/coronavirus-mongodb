@@ -30,7 +30,7 @@ Right click this link [Create a Project API key](https://docs.atlas.mongodb.com/
 Export the MongoDB Demos as a zip file from https://github.com/brittonlaroche/MongoDB-Demos. Press the green button in the upper right labled __"Clone Or Download"__ and press the download a zip file link.   
 
 #### 4. Extract the zip file
-Exctact the zip file to the directory you installed the stitch-cli tool.  The shipping application stitch export is located under (stitch-cli path)/MongoDB-Demos-master/Applications/Shipping/exported
+Exctact the zip file to the directory you installed the stitch-cli tool.  The shipping application stitch export is located under (stitch-cli path)/MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example
 
 #### 5. Log in via stitch-cli
 log into your atlas cluster with your API key (public and pprivate keys) with the stich command line tool.
