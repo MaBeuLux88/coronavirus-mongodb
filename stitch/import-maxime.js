@@ -1,16 +1,24 @@
 exports = async function () {
-    const statistics = context.services.get("mongodb-atlas").db("coronavirus").collection("statistics");
-    statistics.deleteMany({}).then(result => console.log(JSON.stringify(result)));
+    const confirmed = context.services.get("mongodb-atlas").db("coronavirus").collection("confirmed");
+    const deaths = context.services.get("mongodb-atlas").db("coronavirus").collection("deaths");
+    const recovered = context.services.get("mongodb-atlas").db("coronavirus").collection("recovered");
+
+    confirmed.deleteMany({}).then(result => console.log(JSON.stringify(result)));
+    deaths.deleteMany({}).then(result => console.log(JSON.stringify(result)));
+    recovered.deleteMany({}).then(result => console.log(JSON.stringify(result)));
 
     const csv_confirmed = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Confirmed.csv"});
     const csv_deaths = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Deaths.csv"});
     const csv_recovered = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Recovered.csv"});
 
-    let docs = import_csv(csv_confirmed.body.text(), "confirmed");
-    import_csv_update_docs(docs, csv_deaths.body.text(), "deaths");
-    import_csv_update_docs(docs, csv_recovered.body.text(), "recovered");
+    let docs_confirmed = import_csv(csv_confirmed.body.text(), "confirmed");
+    let docs_deaths = import_csv(csv_deaths.body.text(), "deaths");
+    let docs_recovered = import_csv(csv_recovered.body.text(), "recovered");
 
-    return await statistics.insertMany(docs);
+    console.log(JSON.stringify(await confirmed.insertMany(docs_confirmed)));
+    console.log(JSON.stringify(await deaths.insertMany(docs_deaths)));
+    console.log(JSON.stringify(await recovered.insertMany(docs_recovered)));
+    return 0;
 };
 
 function import_csv(csv, field) {
@@ -51,40 +59,6 @@ function import_csv(csv, field) {
         }
     }
     return docs;
-}
-
-function import_csv_update_docs(docs, csv, field) {
-    csv = csv.replace(/Mainland /g, "");
-
-    const lines = csv.split("\n");
-    const headers = lines[0].split(",");
-    const nb_entries = headers.length - 4;
-
-    for (let i = 1; i < lines.length; i++) {
-        if (i % 10 === 0) {
-            console.log("Processing line " + i + " of " + field);
-        }
-        let current_line = lines[i];
-        const state = extract_state(current_line);
-        current_line = shift_line(current_line);
-        const country = extract_next(current_line);
-        current_line = shift_line(current_line);
-        current_line = shift_line(current_line);
-        current_line = shift_line(current_line);
-
-        for (let j = 0; j < nb_entries; j++) {
-            const value = parseInt(extract_next(current_line)) || 0;
-            current_line = shift_line(current_line);
-            const date = headers[j + 4];
-
-            docs.forEach(doc => {
-                if (doc.state === state && doc.country === country && doc.date === date) {
-                    doc[field] = value;
-                }
-            })
-
-        }
-    }
 }
 
 function extract_state(line) {
