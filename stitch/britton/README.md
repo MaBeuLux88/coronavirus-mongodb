@@ -30,7 +30,7 @@ Right click this link [Create a Project API key](https://docs.atlas.mongodb.com/
 Export the MongoDB Demos as a zip file from https://github.com/brittonlaroche/MongoDB-Demos. Press the green button in the upper right labled __"Clone Or Download"__ and press the download a zip file link.   
 
 #### 4. Extract the zip file
-Extract the zip file to the directory you installed the stitch-cli tool.  The shipping application stitch export is located under (stitch-cli path)/MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example
+Extract the zip file to the directory you installed the stitch-cli tool.  The coronavirus application stitch export is located under (stitch-cli path)/MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example
 
 #### 5. Log in via stitch-cli
 log into your atlas cluster with your API key (public and pprivate keys) with the stich command line tool.
@@ -46,7 +46,7 @@ stitch-cli login --api-key=ytqictxq --private-api-key=8137b118-4a36-4197-a3c7-23
 ←[0;0myou have successfully logged in as ytqictxq←[0m
 ```
 
-#### 6. Import the shipping application
+#### 6. Import the coronavirus application
 After logging in the command line maintains the connection until you execute the command __stitch-cli logout__.  We are now ready to import the application. The following command below should work.
 ```
 stitch-cli import  --app-id=coronavirus-jitww --path=./MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example --strategy=replace
@@ -55,24 +55,24 @@ stitch-cli import  --app-id=coronavirus-jitww --path=./MaBeuLux88/coronavirus-mo
 Follow the prompts and respond __y__ when asked if you would like to create a new app. Press enter to accept the default values.  Change the values to match your configuration.  An example is provided below.
 
 ```
-stitch-cli import  --app-id=shipping-ekqoy --path=./MongoDB-Demos-master/Applications/Shipping/exported --strategy=replace
+stitch-cli import  --app-id=coronavirus-jitww --path=./MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example --strategy=replace
 ←[0;0mUnable to find app with ID: "coronavirus-jitww": would you like to create a new app? [y/n]:←[0m y
-←[0;0mApp name [shipping]:←[0m
+←[0;0mApp name [coronavirus]:←[0m
 ←[0;0mAvailable Projects:←[0m
 ←[0;0mProject 0 - 5ce58a9fc56c98145d922e93←[0m
 ←[0;0mAtlas Project Name or ID [Project 0]:←[0m
 ←[0;0mLocation [US-VA]:←[0m
 ←[0;0mDeployment Model [GLOBAL]:←[0m
-←[0;0mNew app created: shipping-vibtf←[0m
+←[0;0mNew app created: coronavirus-vibtf←[0m
 ←[0;0mImporting app...←[0m
 ←[0;0mDone.←[0m
-←[0;0mSuccessfully imported 'shipping-vibtf'←[0m
+←[0;0mSuccessfully imported 'coronavirus-vibtf'←[0m
 
 stitch-cli logout
 
 ```
 
-If you named your cluster anything other than the default __"DevCluster"__ then you will need to modify a json document to reflect your cluster name. The document is located in your directory here: /MongoDB-Demos-master/Applications/Shipping/exported/services/mongodb-atlas/config.json
+If you named your cluster anything other than the default __"DevCluster"__ then you will need to modify a json document to reflect your cluster name. The document is located in your directory here: /MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example/services/mongodb-atlas/config.json
 
 If you named your cluster "Cluster0" for example you would change the __"clusterName":__ field from __"DevCluster"__ to __"Cluster0"__.  An example has been provided below.
 
