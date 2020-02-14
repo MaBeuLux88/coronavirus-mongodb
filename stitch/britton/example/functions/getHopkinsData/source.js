@@ -5,9 +5,9 @@ exports = async function () {
     confirmed.deleteMany({}).then(result => console.log(JSON.stringify(result)));
     deaths.deleteMany({}).then(result => console.log(JSON.stringify(result)));
     recovered.deleteMany({}).then(result => console.log(JSON.stringify(result)));
-    const csv_confirmed = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Confirmed.csv"});
-    const csv_deaths = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Deaths.csv"});
-    const csv_recovered = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Recovered.csv"});
+    const csv_confirmed = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/archived_data/time_series/time_series_2019-ncov-Confirmed.csv"});
+    const csv_deaths = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/archived_data/time_series/time_series_2019-ncov-Deaths.csv"});
+    const csv_recovered = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/archived_data/time_series/time_series_2019-ncov-Recovered.csv"});
     let docs_confirmed = import_csv(csv_confirmed.body.text(), "confirmed");
     let docs_deaths = import_csv(csv_deaths.body.text(), "deaths");
     let docs_recovered = import_csv(csv_recovered.body.text(), "recovered");
@@ -19,7 +19,7 @@ exports = async function () {
 };
 function import_csv(csv, field) {
     csv = csv.replace(/Mainland /g, "");
-    const lines = csv.split("\n");
+    const lines = csv.trim().split("\n");
     const headers = lines[0].split(",");
     const nb_entries = headers.length - 4;
     let docs = [];
