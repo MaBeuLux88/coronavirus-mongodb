@@ -14,7 +14,7 @@ exports = async function () {
     const docs = generate_docs_template(csv_confirmed_lines);
 
     for (let column_index = 0; column_index < dates.length; column_index++) {
-        let current_docs = docs.slice();
+        let current_docs = JSON.parse(JSON.stringify(docs));
         import_csv_update_docs(current_docs, dates[column_index], column_index, csv_confirmed_lines, "confirmed");
         import_csv_update_docs(current_docs, dates[column_index], column_index, csv_deaths_lines, "deaths");
         import_csv_update_docs(current_docs, dates[column_index], column_index, csv_recovered_lines, "recovered");
@@ -23,6 +23,7 @@ exports = async function () {
     }
 
     console.log("Renaming collection \"temp\" to \"statistics\".");
+    console.log("New data published at: ", new Date());
     await temp.aggregate([{$out: "statistics"}]).next();
     return temp.deleteMany({});
 };
@@ -53,16 +54,18 @@ function generate_docs_template(lines) {
 function import_csv_update_docs(docs, date, column_index, lines, field) {
     for (let i = 1; i < lines.length; i++) {
         let current_line = lines[i];
+
         const state = extract_state(current_line);
         current_line = shift_line(current_line);
         const country = extract_next(current_line);
         current_line = shift_line(current_line, 3 + column_index);
         const value = parseInt(extract_next(current_line)) || 0;
+        const iso_date = to_iso_date(date);
 
         docs.forEach(doc => {
             if (doc.state === state && doc.country === country) {
                 doc.date = date;
-                doc.iso_date = to_iso_date(date);
+                doc.iso_date = iso_date;
                 doc[field] = value;
             }
         });
@@ -70,7 +73,7 @@ function import_csv_update_docs(docs, date, column_index, lines, field) {
 }
 
 function extract_lines(csv) {
-    return csv.replace(/Mainland /g, "").trim().split("\n");
+    return csv.replace(/Mainland /g, "").replace(/Others/g, "Diamond Princess cruise ship").trim().split("\n");
 }
 
 function remove_empty_states(docs) {
@@ -82,15 +85,15 @@ function remove_empty_states(docs) {
 }
 
 function extract_dates_from_headers(lines) {
-    return lines[0].split(",").slice(4);
+    return lines[0].split(",").slice(4).map(date => date.trim());
 }
 
 function extract_state(line) {
     let state;
     if (line.indexOf("\"") === 0) {
-        state = line.split("\"")[1];
+        state = line.split("\"")[1].trim();
     } else {
-        state = line.split(",")[0];
+        state = line.split(",")[0].trim();
     }
     return state;
 }
@@ -107,7 +110,7 @@ function shift_line(line, times = 1) {
 }
 
 function extract_next(line) {
-    return line.split(",")[0];
+    return line.split(",")[0].trim();
 }
 
 function to_iso_date(date) {
