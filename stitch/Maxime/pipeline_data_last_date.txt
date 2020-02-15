@@ -1,0 +1,44 @@
+[
+    {
+        '$sort': {
+            'iso_date': -1
+        }
+    }, {
+    '$group': {
+        '_id': {
+            'country': '$country',
+            'state': '$state'
+        },
+        'deaths': {
+            '$first': '$deaths'
+        },
+        'confirmed': {
+            '$first': '$confirmed'
+        },
+        'recovered': {
+            '$first': '$recovered'
+        },
+        'iso_date': {
+            '$first': '$iso_date'
+        },
+        'date': {
+            '$first': '$date'
+        },
+        'loc': {
+            '$first': '$loc'
+        }
+    }
+}, {
+    '$project': {
+        'deaths': 1,
+        'confirmed': 1,
+        'recovered': 1,
+        'iso_date': 1,
+        'date': 1,
+        'loc': 1,
+        'country': '$_id.country',
+        'state': '$_id.state',
+        '_id': 0
+    }
+}
+]

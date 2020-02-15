@@ -2,25 +2,36 @@ exports = async function () {
     const temp = context.services.get("mongodb-atlas").db("coronavirus").collection("temp");
     await temp.deleteMany({});
 
-    const csv_confirmed = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Confirmed.csv"});
-    const csv_deaths = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Deaths.csv"});
-    const csv_recovered = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/2019-nCoV/master/time_series/time_series_2019-ncov-Recovered.csv"});
+    const csv_confirmed = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv"});
+    const csv_deaths = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv"});
+    const csv_recovered = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"});
 
-    const csv_confirmed_lines = extract_lines(csv_confirmed.body.text());
-    const csv_deaths_lines = extract_lines(csv_deaths.body.text());
-    const csv_recovered_lines = extract_lines(csv_recovered.body.text());
+    let csv_confirmed_lines = extract_lines(csv_confirmed.body.text());
+    let csv_deaths_lines = extract_lines(csv_deaths.body.text());
+    let csv_recovered_lines = extract_lines(csv_recovered.body.text());
 
     const dates = extract_dates_from_headers(csv_confirmed_lines);
-    const docs = generate_docs_template(csv_confirmed_lines);
+    const docs_template = generate_docs_template(csv_confirmed_lines);
+
+    csv_confirmed_lines = remove_first_four_column_and_header(csv_confirmed_lines);
+    csv_deaths_lines = remove_first_four_column_and_header(csv_deaths_lines);
+    csv_recovered_lines = remove_first_four_column_and_header(csv_recovered_lines);
+
+    let docs = [];
 
     for (let column_index = 0; column_index < dates.length; column_index++) {
-        let current_docs = JSON.parse(JSON.stringify(docs));
-        import_csv_update_docs(current_docs, dates[column_index], column_index, csv_confirmed_lines, "confirmed");
-        import_csv_update_docs(current_docs, dates[column_index], column_index, csv_deaths_lines, "deaths");
-        import_csv_update_docs(current_docs, dates[column_index], column_index, csv_recovered_lines, "recovered");
-        remove_empty_states(current_docs);
-        await temp.insertMany(current_docs);
+        let current_docs = JSON.parse(JSON.stringify(docs_template));
+        for (let i = 0; i < current_docs.length; i++) {
+            let doc = current_docs[i];
+            set_dates(doc, dates[column_index]);
+            csv_confirmed_lines[i] = extract_data(doc, csv_confirmed_lines[i], "confirmed");
+            csv_deaths_lines[i] = extract_data(doc, csv_deaths_lines[i], "deaths");
+            csv_recovered_lines[i] = extract_data(doc, csv_recovered_lines[i], "recovered");
+        }
+        docs = docs.concat(current_docs);
     }
+
+    await temp.insertMany(docs);
 
     console.log("Renaming collection \"temp\" to \"statistics\".");
     console.log("New data published at: ", new Date());
@@ -41,47 +52,31 @@ function generate_docs_template(lines) {
         current_line = shift_line(current_line);
         const long = parseFloat(extract_next(current_line));
 
-        let doc = {
-            state: state,
-            country: country,
-            loc: {type: "Point", coordinates: [long, lat]},
-        };
+        let doc = {country: country, loc: {type: "Point", coordinates: [long, lat]}};
+        if (state !== "") {
+            doc.state = state;
+        }
         docs.push(doc);
     }
     return docs;
 }
 
-function import_csv_update_docs(docs, date, column_index, lines, field) {
-    for (let i = 1; i < lines.length; i++) {
-        let current_line = lines[i];
+function extract_data(doc, csv_line, field) {
+    doc[field] = parseInt(extract_next(csv_line));
+    return shift_line(csv_line);
+}
 
-        const state = extract_state(current_line);
-        current_line = shift_line(current_line);
-        const country = extract_next(current_line);
-        current_line = shift_line(current_line, 3 + column_index);
-        const value = parseInt(extract_next(current_line)) || 0;
-        const iso_date = to_iso_date(date);
+function set_dates(doc, date) {
+    doc.date = date;
+    doc.iso_date = to_iso_date(date);
+}
 
-        docs.forEach(doc => {
-            if (doc.state === state && doc.country === country) {
-                doc.date = date;
-                doc.iso_date = iso_date;
-                doc[field] = value;
-            }
-        });
-    }
+function remove_first_four_column_and_header(lines) {
+    return lines.slice(1).map(line => shift_line(line, 4));
 }
 
 function extract_lines(csv) {
     return csv.replace(/Mainland /g, "").replace(/Others/g, "Diamond Princess cruise ship").trim().split("\n");
-}
-
-function remove_empty_states(docs) {
-    docs.forEach(doc => {
-        if (doc.state === "") {
-            delete doc.state;
-        }
-    })
 }
 
 function extract_dates_from_headers(lines) {
@@ -114,10 +109,9 @@ function extract_next(line) {
 }
 
 function to_iso_date(date) {
-    const date_parts = date.trim().split(" ");
-    const parts = date_parts[0].split("/");
-    const year = "20" + parts[2];
-    const month = ("0" + parts[0]).slice(-2);
-    const day = ("0" + parts[1]).slice(-2);
-    return new Date(year + "-" + month + "-" + day + "T" + date_parts[1]);
+    const date_parts = date.trim().split("/");
+    const year = "20" + date_parts[2];
+    const month = ("0" + date_parts[0]).slice(-2);
+    const day = ("0" + date_parts[1]).slice(-2);
+    return new Date(year + "-" + month + "-" + day);
 }
