@@ -18,6 +18,9 @@
         'recovered': {
             '$first': '$recovered'
         },
+        'infected': {
+            '$first': '$infected'
+        },
         'iso_date': {
             '$first': '$iso_date'
         },
@@ -33,6 +36,7 @@
         'deaths': 1,
         'confirmed': 1,
         'recovered': 1,
+        'infected': 1,
         'iso_date': 1,
         'date': 1,
         'loc': 1,

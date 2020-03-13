@@ -14,7 +14,6 @@ exports = async function () {
     const csv_recovered = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"});
     stop_timer(start_time);
 
-
     start_timer("Process CSVs");
     let csv_confirmed_lines = extract_lines(csv_confirmed.body.text());
     let csv_deaths_lines = extract_lines(csv_deaths.body.text());
@@ -31,18 +30,19 @@ exports = async function () {
     const deaths_lines_arrays = split_to_array(csv_deaths_lines);
     const recovered_lines_arrays = split_to_array(csv_recovered_lines);
     stop_timer(start_time);
-    
+
     let docs = [];
 
     start_timer("Generate Docs");
-    for (let column_index = 0; column_index < dates.length; column_index++) {
+    for (let col_index = 0; col_index < dates.length; col_index++) {
         let current_docs = JSON.parse(JSON.stringify(docs_template));
         for (let i = 0; i < current_docs.length; i++) {
             let doc = current_docs[i];
-            set_dates(doc, dates[column_index]);
-            set_data(doc, confirmed_lines_arrays[i][column_index], "confirmed");
-            set_data(doc, deaths_lines_arrays[i][column_index], "deaths");
-            set_data(doc, recovered_lines_arrays[i][column_index], "recovered");
+            set_dates(doc, dates[col_index]);
+            set_data(doc, confirmed_lines_arrays[i][col_index], "confirmed");
+            set_data(doc, deaths_lines_arrays[i][col_index], "deaths");
+            set_data(doc, recovered_lines_arrays[i][col_index], "recovered");
+            set_data(doc, confirmed_lines_arrays[i][col_index] - deaths_lines_arrays[i][col_index] - recovered_lines_arrays[i][col_index], "infected")
         }
         docs = docs.concat(current_docs);
     }
@@ -59,7 +59,7 @@ exports = async function () {
     start_timer("DeleteMany temp collection");
     await temp.deleteMany({});
     stop_timer(start_time);
-    
+
     return "Job Done!";
 };
 
@@ -68,7 +68,7 @@ function generate_docs_template(lines) {
 
     for (let i = 1; i < lines.length; i++) {
         let current_line = lines[i];
-        const state = extract_state(current_line);
+        const state = extract_next(current_line);
         current_line = shift_line(current_line);
         const country = extract_next(current_line);
         current_line = shift_line(current_line);
@@ -103,23 +103,21 @@ function split_to_array(lines) {
 }
 
 function extract_lines(csv) {
-    return csv.replace(/Mainland China/g, "China")
-        .replace(/Others/g, "Diamond Princess cruise ship")
-        .trim().split("\n");
+    return csv.trim().split("\n").filter(line => !/^".+?,.+?",US/.test(line));
 }
 
 function extract_dates_from_headers(lines) {
     return lines[0].split(",").slice(4).map(date => date.trim());
 }
 
-function extract_state(line) {
-    let state;
+function extract_next(line) {
+    let next;
     if (line.indexOf("\"") === 0) {
-        state = line.split("\"")[1].trim();
+        next = line.split("\"")[1].trim();
     } else {
-        state = line.split(",")[0].trim();
+        next = line.split(",")[0].trim();
     }
-    return state;
+    return next;
 }
 
 function shift_line(line, times = 1) {
@@ -131,10 +129,6 @@ function shift_line(line, times = 1) {
         }
     }
     return line;
-}
-
-function extract_next(line) {
-    return line.split(",")[0].trim();
 }
 
 function to_iso_date(date) {
