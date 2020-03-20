@@ -4,17 +4,17 @@ exports = async function () {
 
     const temp = context.services.get("mongodb-atlas").db("dev").collection("temp");
 
-    start_timer("DeleteMany temp collection");
+    start_timer();
     await temp.deleteMany({});
-    stop_timer(start_time);
+    stop_timer("DeleteMany temp collection");
 
-    start_timer("Download CSVs");
+    start_timer();
     const csv_confirmed = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv"});
     const csv_deaths = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv"});
     const csv_recovered = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"});
-    stop_timer(start_time);
+    stop_timer("Download CSVs");
 
-    start_timer("Process CSVs");
+    start_timer();
     let csv_confirmed_lines = extract_lines(csv_confirmed.body.text());
     let csv_deaths_lines = extract_lines(csv_deaths.body.text());
     let csv_recovered_lines = extract_lines(csv_recovered.body.text());
@@ -29,11 +29,11 @@ exports = async function () {
     const confirmed_lines_arrays = split_to_array(csv_confirmed_lines);
     const deaths_lines_arrays = split_to_array(csv_deaths_lines);
     const recovered_lines_arrays = split_to_array(csv_recovered_lines);
-    stop_timer(start_time);
+    stop_timer("Process CSVs");
 
     let docs = [];
 
-    start_timer("Generate Docs");
+    start_timer();
     for (let col_index = 0; col_index < dates.length; col_index++) {
         let current_docs = JSON.parse(JSON.stringify(docs_template));
         for (let i = 0; i < current_docs.length; i++) {
@@ -46,19 +46,19 @@ exports = async function () {
         }
         docs = docs.concat(current_docs);
     }
-    stop_timer(start_time);
+    stop_timer("Generate Docs");
 
-    start_timer("InsertMany Docs");
+    start_timer();
     await temp.insertMany(docs);
-    stop_timer(start_time);
+    stop_timer("InsertMany Docs");
 
-    start_timer("Renaming temp collection to statistics collection");
+    start_timer();
     await temp.aggregate([{$out: "statistics"}]).next();
-    stop_timer(start_time);
+    stop_timer("Renaming temp collection to statistics collection");
 
-    start_timer("DeleteMany temp collection");
+    start_timer();
     await temp.deleteMany({});
-    stop_timer(start_time);
+    stop_timer("DeleteMany temp collection");
 
     return "Job Done!";
 };
@@ -139,14 +139,10 @@ function to_iso_date(date) {
     return new Date(year + "-" + month + "-" + day);
 }
 
-function start_timer(message) {
+function start_timer() {
     start_time = new Date();
-    console.log("TASK  - " + message);
-    console.log("START - " + start_time);
 }
 
-function stop_timer(start) {
-    const end = new Date();
-    console.log("END   - " + end);
-    console.log("TOOK  - " + (end - start) / 1000, "s");
+function stop_timer(message) {
+    console.log("TOOK", (new Date() - start_time) / 1000, "s", "- TASK:", message, "- Started at:", start_time);
 }
