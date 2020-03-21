@@ -53,14 +53,14 @@ stitch-cli login --api-key=abcictxq --private-api-key=1234b567-4a36-4197-a3c7-23
 ### 6. Import the coronavirus application
 After logging in the command line maintains the connection until you execute the command **stitch-cli logout**. We are now ready to import the application. The following command below should work.
 ```
-stitch-cli import --app-id=coronavirus-jitww --path=./MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example --strategy=replace
+stitch-cli import --app-id=corona-fohlv --path=./MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example --strategy=replace
 ```
 
 Follow the prompts and respond **y** when asked if you would like to create a new app. Press enter to accept the default values. Change the values to match your configuration. An example is provided below.
 
 ```
-stitch-cli import --app-id=coronavirus-jitww --path=./MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example --strategy=replace
-← Unable to find app with ID: "coronavirus-jitww": would you like to create a new app? [y/n]: ← y
+stitch-cli import --app-id=corona-fohlv --path=./MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example --strategy=replace
+← Unable to find app with ID: "corona-fohlv": would you like to create a new app? [y/n]: ← y
 ← App name [coronavirus]: ←
 ← Available Projects: ←
 ← Project 0 - 5ce58a9fc56c98145d922e93 ←
@@ -78,7 +78,7 @@ stitch-cli logout
 
 If you named your cluster anything other than the default **"DevCluster"** then you will need to modify a json document to reflect your cluster name. The document is located in your directory here: /MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example/services/mongodb-atlas/config.json
 
-If you named your cluster "Cluster0" for example you would change the **"clusterName":** field from **"DevCluster"** to **"Cluster0"**. An example has been provided below.
+If you named your cluster "DevCluster" for example you would change the **"clusterName":** field from **"Cluster0"** to **"DevCluster"**. An example has been provided below.
 
 ```
 
@@ -87,7 +87,7 @@ If you named your cluster "Cluster0" for example you would change the **"cluster
     "name": "mongodb-atlas",
     "type": "mongodb-atlas",
     "config": {
-        "clusterName": "Cluster0",
+        "clusterName": "DevCluster",
         "readPreference": "primary",
         "wireProtocolEnabled": false
     },
