@@ -31,7 +31,7 @@ Next [Create a Project API key](https://docs.atlas.mongodb.com/configure-api-acc
 Right click this link [Create a Project API key](https://docs.atlas.mongodb.com/configure-api-access/#programmatic-api-keys) open in new tab. Follow instruction under **Manage Programmatic Access to a Project** perform each step listed in the section **Create an API Key for a Project** be sure to copy the private API key somewhere safe for future reference.
 
 ### 3. Download the GitHub code
-Export the MongoDB Demos as a zip file from https://github.com/brittonlaroche/MongoDB-Demos. Press the green button in the upper right labeled **"Clone Or Download"** and press the download a zip file link.
+Export the MongoDB Demos as a zip file from https://github.com/MaBeuLux88/coronavirus-mongodb. Press the green button in the upper right labeled **"Clone Or Download"** and press the download a zip file link.
 
 ### 4. Extract the zip file
 Extract the zip file to the directory you installed the stitch-cli tool. The coronavirus application stitch export is located under (stitch-cli path)/MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example
