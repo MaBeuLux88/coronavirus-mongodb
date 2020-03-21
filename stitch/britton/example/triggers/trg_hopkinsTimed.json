@@ -1,0 +1,10 @@
+{
+    "id": "5e6ad5e5ac448f9221d70e69",
+    "name": "trg_hopkinsTimed",
+    "type": "SCHEDULED",
+    "config": {
+        "schedule": "*/15 * * * *"
+    },
+    "function_name": "getHopkinsCsv",
+    "disabled": false
+}
