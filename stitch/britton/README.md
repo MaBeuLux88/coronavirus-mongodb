@@ -76,10 +76,26 @@ stitch-cli logout
 
 ```
 
-If you named your cluster anything other than the default **"DevCluster"** then you will need to modify a json document to reflect your cluster name. The document is located in your directory here: /MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example/services/mongodb-atlas/config.json
+If you named your cluster anything other than the default **"Cluster0"** then you will need to modify a json document to reflect your cluster name. The document is located in your directory here: /MaBeuLux88/coronavirus-mongodb/edit/master/stitch/britton/example/services/mongodb-atlas/config.json
 
-If you named your cluster "DevCluster" for example you would change the **"clusterName":** field from **"Cluster0"** to **"DevCluster"**. An example has been provided below.
+For example if you named your cluster "DevCluster", you would change the **"clusterName":** field from **"Cluster0"** to **"DevCluster"**. An example has been provided below.
 
+Before modification
+```
+
+{
+    "id": "5d218cb4e0601bec3de065c7",
+    "name": "mongodb-atlas",
+    "type": "mongodb-atlas",
+    "config": {
+        "clusterName": "Cluster0",
+        "readPreference": "primary",
+        "wireProtocolEnabled": false
+    },
+    "version": 1
+}
+```
+After modification
 ```
 
 {
