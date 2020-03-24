@@ -2,7 +2,7 @@ let start_time;
 
 exports = async function () {
 
-    const temp = context.services.get("mongodb-atlas").db("coronavirus").collection("temp");
+    const temp = context.services.get("mongodb-atlas").db("coronavirus2").collection("temp");
 
     start_timer();
     await temp.deleteMany({});
