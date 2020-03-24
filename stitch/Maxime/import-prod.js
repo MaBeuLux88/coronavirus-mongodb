@@ -9,26 +9,22 @@ exports = async function () {
     stop_timer("DeleteMany temp collection");
 
     start_timer();
-    const csv_confirmed = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv"});
-    const csv_deaths = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv"});
-    const csv_recovered = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"});
+    const csv_confirmed = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"});
+    const csv_deaths = await context.http.get({url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"});
     stop_timer("Download CSVs");
 
     start_timer();
     let csv_confirmed_lines = extract_lines(csv_confirmed.body.text());
     let csv_deaths_lines = extract_lines(csv_deaths.body.text());
-    let csv_recovered_lines = extract_lines(csv_recovered.body.text());
 
     const dates = extract_dates_from_headers(csv_confirmed_lines);
     const docs_template = generate_docs_template(csv_confirmed_lines);
 
     csv_confirmed_lines = remove_first_four_column_and_header(csv_confirmed_lines);
     csv_deaths_lines = remove_first_four_column_and_header(csv_deaths_lines);
-    csv_recovered_lines = remove_first_four_column_and_header(csv_recovered_lines);
 
     const confirmed_lines_arrays = split_to_array(csv_confirmed_lines);
     const deaths_lines_arrays = split_to_array(csv_deaths_lines);
-    const recovered_lines_arrays = split_to_array(csv_recovered_lines);
     stop_timer("Process CSVs");
 
     let docs = [];
@@ -41,8 +37,6 @@ exports = async function () {
             set_dates(doc, dates[col_index]);
             set_data(doc, confirmed_lines_arrays[i][col_index], "confirmed");
             set_data(doc, deaths_lines_arrays[i][col_index], "deaths");
-            set_data(doc, recovered_lines_arrays[i][col_index], "recovered");
-            set_data(doc, confirmed_lines_arrays[i][col_index] - deaths_lines_arrays[i][col_index] - recovered_lines_arrays[i][col_index], "infected")
         }
         docs = docs.concat(current_docs);
     }
